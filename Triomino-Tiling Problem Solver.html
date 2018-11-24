@@ -1,0 +1,141 @@
+<html>
+<body>
+
+Draw a 2^n x 2^n chekerboard:
+<input type="text" id="power" value="">
+<button onclick="doDraw()">Draw</button>
+<button onclick="doClear()">Clear</button>
+<br> <br>
+Type a column / row index of one missing square (m,n):
+<input type="text" id="index" value="">
+<button onclick="findSol()">Execute</button>
+<br>
+<canvas id="canvas" width="700" height="700"></canvas>
+
+
+
+<script type="text/javascript">
+var elem = document.getElementById('canvas');
+var context = elem.getContext('2d');
+var tileSize = 0;
+var power = 0;
+
+context.fillStyle = '#000';
+context.lineWidth = 1;
+
+function drawLine(x1, y1, x2, y2){
+  context.moveTo(x1, y1);
+  context.lineTo(x2, y2);
+}
+function drawTiles(power){
+  if (power !== 0){
+  	context.fillStyle = "blue";
+    context.fillRect(50, 50, 600, 600);
+
+   	power = Math.pow(2, power);
+
+    tileSize = 600 / power;
+
+    context.strokeStyle = "white";
+    for(var i = 1; i < power; i ++) {
+     	drawLine(50 + (i * tileSize), 50, 50 + (i * tileSize), 650);
+        drawLine(50, 50 + (i * tileSize), 700, 50 + (i * tileSize));
+    }
+  }
+}
+function doDraw(){
+  power = parseInt(document.getElementById("power").value) ;
+  context.beginPath();
+  drawTiles(power);
+  context.closePath();
+  context.stroke();
+}
+function doClear() {
+  context.clearRect(0, 0, canvas.width, canvas.height) ;
+}
+function tileTriomino(start_x, start_y, missing_x, missing_y, n){
+	if(n == 1) return;
+
+    var missing_side = 0;
+    var x_half = (start_x + n/2 - 1);
+    var y_half = (start_y + n/2 - 1);
+
+    // check if the missing tile is in left-up area
+    if ((missing_x <= x_half) && (missing_y <= y_half)) {
+      missing_side = 0;
+      drawLine(50 + ((x_half) * tileSize), 50 + (y_half * tileSize), 50 + ((x_half) * tileSize) + (tileSize), 50 + (y_half * tileSize));
+  		  drawLine(50 + ((x_half) * tileSize), 50 + ((y_half) * tileSize), 50 + ((x_half) * tileSize), 50 + ((y_half) * tileSize) + (tileSize));
+    }
+    // check if the missing tile is in right-up area
+    else if ((missing_x > x_half) && (missing_y <= y_half)) {
+      missing_side = 1;
+      drawLine(50 + ((x_half-1) * tileSize), 50 + (y_half * tileSize), 50 + ((x_half-1) * tileSize) + (tileSize), 50 + (y_half * tileSize));
+  		  drawLine(50 + ((x_half) * tileSize), 50 + ((y_half) * tileSize), 50 + ((x_half) * tileSize), 50 + ((y_half) * tileSize) + (tileSize));
+    }
+    // check if the missing tile is in left-down area
+    else if ((missing_x <= x_half) && (missing_y > y_half)) {
+      missing_side = 2;
+      drawLine(50 + ((x_half) * tileSize), 50 + (y_half * tileSize), 50 + ((x_half) * tileSize) + (tileSize), 50 + (y_half * tileSize));
+  		  drawLine(50 + ((x_half) * tileSize), 50 + ((y_half-1) * tileSize), 50 + ((x_half) * tileSize), 50 + ((y_half-1) * tileSize) + (tileSize));
+    }
+    // check if the missing tile is in right-down area
+    else {
+      missing_side = 3;
+      drawLine(50 + ((x_half-1) * tileSize), 50 + (y_half * tileSize), 50 + ((x_half-1) * tileSize) + (tileSize), 50 + (y_half * tileSize));
+  	  drawLine(50 + ((x_half) * tileSize), 50 + ((y_half-1) * tileSize), 50 + ((x_half) * tileSize), 50 + ((y_half-1) * tileSize) + (tileSize));
+    }
+
+    // left-up
+    if (missing_side == 0) {
+      tileTriomino(start_x, start_y, missing_x, missing_y, n/2);
+      tileTriomino(start_x + n/2, start_y, start_x + n/2, start_y + n/2 - 1, n/2);
+    tileTriomino(start_x + n/2, start_y + n/2, start_x + n/2, start_y + n/2, n/2);
+    tileTriomino(start_x, start_y + n/2, start_x + n/2 - 1, start_y + n/2, n/2);
+      }
+    // right-up
+    else if (missing_side == 1) {
+      tileTriomino(start_x, start_y, start_x + n/2 - 1, start_y + n/2 - 1, n/2);
+      tileTriomino(start_x + n/2, start_y, missing_x, missing_y, n/2);
+    tileTriomino(start_x + n/2, start_y + n/2, start_x + n/2, start_y + n/2, n/2);
+    tileTriomino(start_x, start_y + n/2, start_x + n/2 - 1, start_y + n/2, n/2);
+    }
+    // left-down
+    else if (missing_side == 2) {
+      tileTriomino(start_x, start_y, start_x + n/2 - 1, start_y + y_half - 1, n/2);
+      tileTriomino(start_x + n/2, start_y, start_x + n/2, start_y + n/2 - 1, n/2);
+    tileTriomino(start_x + n/2, start_y + n/2, start_x + n/2, start_y + n/2, n/2);
+    tileTriomino(start_x, start_y + n/2, missing_x, missing_y, n/2);
+    }
+    // right-down
+    else {
+      tileTriomino(start_x, start_y, start_x + n/2 - 1, start_y + n/2 - 1, n/2);
+      tileTriomino(start_x + n/2, start_y, start_x + n/2, start_y + n/2 - 1, n/2);
+    tileTriomino(start_x + n/2, start_y + n/2, missing_x, missing_y, n/2);
+    tileTriomino(start_x, start_y + n/2, start_x + n/2 - 1, start_y + n/2, n/2);
+    }
+}
+function findSol() {
+  var index = document.getElementById("index").value ;
+  index = index.split(",");
+
+  var col_idx = parseInt(index[0]);
+  var row_idx = parseInt(index[1]);
+  power = Math.pow(2, power);
+
+  context.fillStyle = "white";
+  context.fillRect(50 + ((col_idx-1) * tileSize), 50 + ((row_idx-1) * tileSize), tileSize, tileSize);
+
+  context.beginPath();
+  context.strokeStyle = "blue";
+  context.lineWidth = 1.8;
+
+  tileTriomino(1, 1, col_idx, row_idx, power);
+
+  context.closePath();
+  context.stroke();
+}
+
+</script>
+
+</body>
+</html>
